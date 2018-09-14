@@ -14,7 +14,7 @@ client.on('error', error => {
 });
 
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('./public'));
 
 // REVIEW: These are routes for requesting HTML resources.
@@ -34,8 +34,11 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (req, res) => {
-  let SQL = '';
-  let values = [];
+  let SQL = 'INSERT INTO authors (author, author_url) VALUES ($1, $2);';
+  let values = [
+    req.body.author,
+    req.body.author_url
+  ];
 
   client.query(SQL, values,
     function (err) {
@@ -45,12 +48,16 @@ app.post('/articles', (req, res) => {
     }
   )
 
-  SQL = '';
-  values = [];
+  SQL = 'SELECT author_id FROM authors WHERE authors.author = ($1) AND authors.author_url = ($2);';
+  values = [
+    req.body.author,
+    req.body.author_url
+  ];
 
   function queryTwo() {
     client.query(SQL, values,
       function (err, result) {
+        console.log(result)
         if (err) console.error(err);
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
@@ -59,19 +66,19 @@ app.post('/articles', (req, res) => {
     )
   }
 
-  SQL = `INSERT INTO articles
-  (title, author, author_url, category, published_on, body)
-  VALUES ($1, $2, $3, $4, $5, $6)`;
-  values = [
-    req.body.title,
-    req.body.author,
-    req.body.author_url,
-    req.body.category,
-    req.body.published_on,
-    req.body.body
-  ];
 
   function queryThree(author_id) {
+    SQL = `INSERT INTO articles
+    (title, author_id, category, published_on, body)
+    VALUES ($1, $2, $3, $4, $5)`;
+    values = [
+      req.body.title,
+      author_id,
+      req.body.category,
+      req.body.published_on,
+      req.body.body
+    ];
+
     client.query(SQL, values,
       function (err) {
         if (err) console.error(err);

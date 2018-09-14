@@ -1,22 +1,21 @@
 # Lab 09: Database Relationships & SQL Joins
 
-**Author**: Your Name Goes Here
-**Version**: 1.0.0 (increment the patch/fix version number up if you make more commits past your first submission)
+**Author**: Danul Deleon and Neth Horn
+**Version**: 1.5.0 (increment the patch/fix version number up if you make more commits past your first submission)
 
 ## Overview
-<!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for a Code Fellows 301 class. (i.e. What's your problem domain?) -->
+This app displays blog entries and lets the user enter add their own entries.
 
 ## Getting Started
-<!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
+From the neth-danul folder, run npm install and enjoy. Also, make sure you enter your postgres credentials into the conString in server.js.
 
 ## Architecture
-<!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
+This app is built on nodejs and express on the back end with a Postgres database. The front end uses HTML, CSS, and Javascript. It also uses jQuery and Handlebars for templating.
 
 ## Change Log
-<!-- Use this are to document the iterative changes made to your application as each feature is successfully implemented. Use time stamps. Here's an examples:
+09-14-2018 11:48am - Database checks if author already exists.
 
-01-01-2001 4:59pm - Application now has a fully-functional express server, with GET and POST routes for the book resource.
+09-14-2018 10:30am - All blog routes totes work.
 
 ## Credits and Collaborations
-<!-- Give credit (and a link) to other people or resources that helped you build this application. -->
--->
+We'd like to thank Alton Brown whose recipes are always an inspiration.

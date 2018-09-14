@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = 'postgres://postgres:austin2789@localhost:5432/kilovolt';
+const conString = 'postgres://neth:123456@localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -34,20 +34,33 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = `INSERT INTO authors(author, author_url) VALUES ($1, $2);`;
-  let values = [request.body.author, request.body.author_url];
+  let SQL = `SELECT * FROM authors WHERE author = $1;`
+  let values = [request.body.author];
 
-  client.query( SQL, values,
-    function(err) {
-      if (err) console.error(err);
-      // REVIEW: This is our second query, to be executed when this first query is complete.
+  client.query( SQL, values, function(err, result) {
+    console.log('RESULT', result.rows);
+    if (result.rows.length) {
       queryTwo();
+    } else {
+      queryOne();
     }
-  )
+  });
+
+  function queryOne() {
+    SQL = `INSERT INTO authors(author, author_url) VALUES ($1, $2);`;
+    values = [request.body.author, request.body.author_url];
+    client.query( SQL, values,
+      function(err) {
+        if (err) console.error(err);
+        // REVIEW: This is our second query, to be executed when this first query is complete.
+        queryTwo();
+      }
+    )
+  }
   
   function queryTwo() {
     SQL = `SELECT author_id FROM authors WHERE author=$1 AND author_url=$2;`;
-    // values = [request.body.author, request.body.author_url];
+    values = [request.body.author, request.body.author_url];
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -56,7 +69,7 @@ app.post('/articles', (request, response) => {
       }
     )
   }
-  
+
   function queryThree(author_id) {
     SQL = `INSERT INTO articles (title, author_id, category, published_on, body) VALUES ($1, $2, $3, $4, $5)`;
     values = [request.body.title, author_id, request.body.category, request.body.published_on, request.body.body];

@@ -6,7 +6,8 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = 'postgres://carlos:labs@localhost:5432/kilovolt';
+// const conString = 'postgres://carlos:labs@localhost:5432/kilovolt';
+const conString = 'postgres://localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -24,7 +25,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(`SELECT author, author_url, title, category, published_on, body FROM authors INNER JOIN articles on articles.author_id=authors.author_id`)
+  client.query(`SELECT * FROM authors INNER JOIN articles ON articles.author_id=authors.author_id`)
     .then(result => {
       response.send(result.rows);
 
@@ -65,8 +66,7 @@ app.post('/articles', (request, response) => {
   }
 
   function queryThree(author_id) {
-    SQL = 'INSERT INTO articles (title, category, published_on, body, author_id) VALUES ($1, $2, $3, $4,, $5)';
-    console.log(author_id)
+    SQL = 'INSERT INTO articles (title, category, published_on, body, author_id) VALUES ($1, $2, $3, $4, $5)';
     values = [
       request.body.title,
       request.body.category,
@@ -84,12 +84,22 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = '';
-  let values = [];
+  let SQL = 'UPDATE authors SET author = $1, author_url = $2 WHERE author_id = $3';
+  let values = [
+    request.body.author,
+    request.body.author_url,
+    request.params.id
+  ];
   client.query( SQL, values )
     .then(() => {
-      let SQL = '';
-      let values = [];
+      let SQL = 'UPDATE articles SET title = $1, published_on = $2, body = $3, category = $4 WHERE author_id = $5';
+      let values = [
+        request.body.title,
+        request.body.published_on,
+        request.body.body,
+        request.body.category,
+        request.params.id
+      ];
       client.query( SQL, values )
     })
     .then(() => {

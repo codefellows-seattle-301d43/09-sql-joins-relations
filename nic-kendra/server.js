@@ -37,7 +37,7 @@ app.get('/articles', (request, response) => {
 
 app.post('/articles', (request, response) => {
   // Insert new author record into the database
-  let SQL = `INSERT INTO authors (author, author_url) VALUES ($1, $2);`;
+  let SQL = `INSERT INTO authors (author, author_url) VALUES ($1, $2) ON CONFLICT DO NOTHING;`;
   let values = [request.body.author, request.body.author_url];
 
   client.query( SQL, values,
@@ -48,11 +48,11 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  // Get newly created author's id
-  SQL = `SELECT * FROM authors WHERE author = $1;`;
-  values = [request.body.author];
-
+  
   function queryTwo() {
+    // Get newly created author's id
+    SQL = `SELECT * FROM authors WHERE author = $1;`;
+    values = [request.body.author];
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -63,10 +63,10 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
-
+  
   function queryThree(author_id) {
+    SQL = `INSERT into articles (author_id, title, category, published_on, body) VALUES ($1, $2, $3, $4, $5)`;
+    values = [author_id, request.body.title, request.body.category, request.body.published_on, request.body.body ];
     client.query( SQL, values,
       function(err) {
         if (err) console.error(err);

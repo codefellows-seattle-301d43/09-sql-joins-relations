@@ -24,7 +24,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(`SELECT * FROM articles`)
+  client.query(`SELECT * FROM articles a JOIN authors au ON a.author_id = au.author_id;`)
     .then(result => {
       response.send(result.rows);
     })
@@ -33,7 +33,7 @@ app.get('/articles', (request, response) => {
     });
 });
 
-app.post('/articles', (request, response) => {
+app.post('/articles', (req, res) => {
   let SQL = '';
   let values = [];
 
@@ -59,14 +59,23 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
+  SQL = `INSERT INTO articles
+  (title, author, author_url, category, published_on, body)
+  VALUES ($1, $2, $3, $4, $5, $6)`;
+  values = [
+    req.body.title,
+    req.body.author,
+    req.body.author_url,
+    req.body.category,
+    req.body.published_on,
+    req.body.body
+  ];
 
   function queryThree(author_id) {
     client.query(SQL, values,
       function (err) {
         if (err) console.error(err);
-        response.send('insert complete');
+        res.send('insert complete');
       }
     );
   }

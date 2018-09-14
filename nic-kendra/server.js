@@ -6,8 +6,8 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-// const conString = 'postgres://kendragon:Zip9tape!@localhost:5432/kilovolt';
-const conString = 'postgres://nic_century:cjecdC10041929*@localhost:5432/kilovolt';
+const conString = 'postgres://kendragon:Zip9tape!@localhost:5432/kilovolt';
+// const conString = 'postgres://nic_century:cjecdC10041929*@localhost:5432/kilovolt';
 
 const client = new pg.Client(conString);
 client.connect();
@@ -77,12 +77,12 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = `UPDATE authors (author, author_url) VALUES ($1, $2) WHERE authors.author_id = ${request.body.author_id};`;
-  let values = [request.body.author, request.body.author_url];
+  let SQL = `UPDATE authors SET author=$1, author_url=$2 WHERE author_id=$3;`;
+  let values = [request.body.author, request.body.author_url, request.body.author_id];
   client.query( SQL, values )
     .then(() => {
-      let SQL = `UPDATE articles (title, category, published_on, body) VALUES ($1, $2, $3, $4) WHERE articles.article_id = ${request.params.id};`;
-      let values = [request.body.title, request.body.category, request.body.published_on, request.body.body];
+      let SQL = `UPDATE articles SET title=$1, category=$2, published_on=$3, body=$4 WHERE articles.article_id=$5;`;
+      let values = [request.body.title, request.body.category, request.body.published_on, request.body.body, request.body.article_id];
       client.query( SQL, values )
     })
     .then(() => {

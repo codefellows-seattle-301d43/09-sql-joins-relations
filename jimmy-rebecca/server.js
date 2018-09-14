@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = '';
+const conString = 'postgres://localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -24,7 +24,11 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(`SELECT * FROM articles a JOIN authors au ON a.author_id = au.author_id;`)
+  client.query(`
+  SELECT * 
+  FROM articles a
+  INNER JOIN authors au
+  ON a.author_id = au.author_id;`)
     .then(result => {
       response.send(result.rows);
     })
@@ -34,7 +38,9 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (req, res) => {
-  let SQL = 'INSERT INTO authors (author, author_url) VALUES ($1, $2);';
+  let SQL = `
+  INSERT INTO authors (author, author_url)
+  VALUES ($1, $2);`;
   let values = [
     req.body.author,
     req.body.author_url
@@ -48,7 +54,11 @@ app.post('/articles', (req, res) => {
     }
   )
 
-  SQL = 'SELECT author_id FROM authors WHERE authors.author = ($1) AND authors.author_url = ($2);';
+  SQL = `
+  SELECT author_id
+  FROM authors
+  WHERE authors.author = ($1)
+  AND authors.author_url = ($2);`;
   values = [
     req.body.author,
     req.body.author_url
@@ -89,12 +99,35 @@ app.post('/articles', (req, res) => {
 });
 
 app.put('/articles/:id', function (request, response) {
-  let SQL = '';
-  let values = [];
+  let SQL = `
+  UPDATE authors
+  SET author = $1,
+  author_url = $2
+  WHERE author_id = $3;
+  `;
+  let values = [
+    request.body.author,
+    request.body.author_url,
+    request.body.author_id
+  ];
   client.query(SQL, values)
     .then(() => {
-      let SQL = '';
-      let values = [];
+      let SQL =` 
+      UPDATE articles
+      SET title = $1,
+      category = $2,
+      published_on = $3,
+      body = $4,
+      author_id = $5
+      WHERE article_id = $6;`;
+      let values = [
+        request.body.title,
+        request.body.category,
+        request.body.published_on,
+        request.body.body,
+        request.body.author_id,
+        request.params.id
+      ];
       client.query(SQL, values)
     })
     .then(() => {

@@ -48,8 +48,9 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
+  // Get newly created author's id
+  SQL = `SELECT * FROM authors WHERE author = $1;`;
+  values = [request.body.author];
 
   function queryTwo() {
     client.query( SQL, values,

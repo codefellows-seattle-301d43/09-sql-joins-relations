@@ -35,7 +35,7 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
+  let SQL = ``;
   let values = [];
 
   client.query(SQL, values,
@@ -52,8 +52,12 @@ app.post('/articles', (request, response) => {
   )
 
   function queryTwo() {
-    let SQL = '';
-    let values = [];
+    let SQL = `INSERT INTO authors (author, author_url)
+    VALUES ($1, $2)`
+    let values = [
+      request.body.author,
+      request.body.author_url
+    ];
     client.query(SQL, values,
       function(err, result) {
         if (err) {

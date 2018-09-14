@@ -20,7 +20,8 @@ JS, JQuery, HTML/CSS, SQL, postgres
 
 01-01-2001 4:59pm - Application now has a fully-functional express server, with GET and POST routes for the book resource.-->
 
-09-14-2018 9:08 am - Setup repo
+09-14-2018 10:56 am - Finished lab. All queries tested and working.
+09-14-2018 9:08 am - Setup repo.
 
 ## Credits and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->

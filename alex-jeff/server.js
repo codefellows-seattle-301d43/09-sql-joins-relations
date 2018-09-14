@@ -40,7 +40,7 @@ app.post('/articles', (request, response) => {
   let SQL = `INSERT INTO authors (author, author_url) VALUES($1, $2)`;
   let values = [request.body.author, request.body.author_url];
   // Insert an author and pass the author and author_url as data for the query. On conflict, do nothing.
-  client.query(SQL, values, function (err) {
+  client.query(SQL, values, function(err) {
     if (err) console.error(err);
     // REVIEW: This is our second query, to be executed when this first query is complete.
     queryTwo();
@@ -50,7 +50,7 @@ app.post('/articles', (request, response) => {
   function queryTwo() {
     SQL = `SELECT * FROM authors WHERE author = $1;`;
     values = [request.body.author];
-    client.query(SQL, values, function (err, result) {
+    client.query(SQL, values, function(err, result) {
       if (err) console.error(err);
 
       // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
@@ -71,36 +71,33 @@ app.post('/articles', (request, response) => {
       request.body.body,
       author_id
     ];
-    client.query(SQL, values, function (err) {
+    client.query(SQL, values, function(err) {
       if (err) console.error(err);
       response.send('insert complete');
     });
   }
 });
 
-app.put('/articles/:id', function (request, response) {
-  let SQL =
-    'UPDATE authors SET author = $1, author_url = $2 where author_id = $3;';
-  let values = [
-    request.body.author,
-    request.body.author_url,
-    request.body.author_id
-  ];
-  client
-    .query(SQL, values)
-    .then(() => {
-      SQL = `UPDATE articles 
+app.put('/articles/:id', function(request, response) {
+  let updates = [
+    [
+      'UPDATE authors SET author = $1, author_url = $2 where author_id = $3;',
+      [request.body.author, request.body.author_url, request.body.author_id]
+    ],
+    [
+      `UPDATE articles 
         SET title=$1, category=$2, published_on=$3, body=$4 
-      WHERE article_id = $5;`;
-      values = [
+      WHERE article_id = $5;`,
+      [
         request.body.title,
         request.body.category,
         request.body.published_on,
         request.body.body,
         request.params.id
-      ];
-      client.query(SQL, values);
-    })
+      ]
+    ]
+  ];
+  Promise.all(updates.map(elm => client.query(elm[0], elm[1])))
     .then(() => {
       response.send('Update complete');
     })

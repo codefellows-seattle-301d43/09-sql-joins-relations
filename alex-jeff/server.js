@@ -34,8 +34,8 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
-  let values = [];
+  let SQL = `INSERT INTO authors (author, author_url) VALUES($1, $2)`;
+  let values = [request.body.author, request.body.author_url];
   // Insert an author and pass the author and author_url as data for the query. On conflict, do nothing.
   client.query( SQL, values,
     function(err) {
@@ -45,24 +45,33 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
   //In the second query, add the SQL commands to retrieve a single author from the authors table. Add the author name as data for the query.
   function queryTwo() {
+    SQL = `SELECT * FROM authors WHERE author = $1;`;
+    values = [request.body.author];
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
+        console.log(SQL);
+        console.log(values)
+        console.log(result);
         queryThree(result.rows[0].author_id);
       }
     )
   }
 
-  SQL = '';
-  values = [];
   //In the third query, add the SQL commands to insert the new article using the author_id from the second query. Add the data from the new article, including the author_id, as data for the SQL query.
   function queryThree(author_id) {
+    SQL = `INSERT INTO articles (title, category, published_on, body, author_id) VALUES($1, $2, $3, $4, $5);`;
+    values = [
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body,
+      author_id
+    ];
     client.query( SQL, values,
       function(err) {
         if (err) console.error(err);

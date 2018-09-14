@@ -26,7 +26,6 @@ app.get('/new-article', (request, response) => {
 app.get('/articles', (request, response) => {
   client.query(`SELECT * FROM articles INNER JOIN authors on articles.author_id=authors.author_id`)
     .then(result => {
-      console.log(result.rows);
       response.send(result.rows);
     })
     .catch(err => {
@@ -60,7 +59,6 @@ app.post('/articles', (request, response) => {
         if (err) console.error(err);
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
-        console.log(result.rows[0]);
         queryThree(result.rows[0].author_id);
       }
     )
@@ -76,11 +74,9 @@ app.post('/articles', (request, response) => {
       request.body.published_on,
       request.body.body,
     ];
-    console.log
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
-        console.log(result.rows[0]);
         response.send('insert complete');
       }
     );

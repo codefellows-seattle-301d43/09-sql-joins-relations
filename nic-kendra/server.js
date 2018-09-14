@@ -82,7 +82,7 @@ app.put('/articles/:id', function(request, response) {
   client.query( SQL, values )
     .then(() => {
       let SQL = `UPDATE articles SET title=$1, category=$2, published_on=$3, body=$4 WHERE articles.article_id=$5;`;
-      let values = [request.body.title, request.body.category, request.body.published_on, request.body.body, request.body.article_id];
+      let values = [request.body.title, request.body.category, request.body.published_on, request.body.body, request.params.id];
       client.query( SQL, values )
     })
     .then(() => {

@@ -24,10 +24,10 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(`SELECT author, author_url, title, category, published_on, body FROM authors INNER JOIN articles on articles.author_id=authors.authors_id`)
+  client.query(`SELECT author, author_url, title, category, published_on, body FROM authors INNER JOIN articles on articles.author_id=authors.author_id`)
     .then(result => {
       response.send(result.rows);
-      console.log('DB is loaded')
+
     })
     .catch(err => {
       console.error(err)
@@ -35,8 +35,11 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
-  let values = [];
+  let SQL = 'INSERT INTO authors(author, author_url) VALUES($1, $2) ON CONFLICT DO NOTHING; ';
+  let values = [
+    request.body.author,
+    request.body.author_url
+  ];
 
   client.query( SQL, values,
     function(err) {
@@ -46,10 +49,11 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
-
   function queryTwo() {
+    SQL = 'SELECT * FROM authors WHERE author = $1';
+    values = [
+      request.body.author
+    ];
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -60,10 +64,16 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
-
   function queryThree(author_id) {
+    SQL = 'INSERT INTO articles (title, category, published_on, body, author_id) VALUES ($1, $2, $3, $4,, $5)';
+    console.log(author_id)
+    values = [
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body,
+      author_id
+    ];
     client.query( SQL, values,
       function(err) {
         if (err) console.error(err);
@@ -160,6 +170,7 @@ function loadArticles() {
 // REVIEW: Below are two queries, wrapped in the loadDB() function, which create separate tables in our DB, and create a relationship between the authors and articles tables.
 // THEN they load their respective data from our JSON file.
 function loadDB() {
+  console.log('DB is loaded')
   client.query(`
     CREATE TABLE IF NOT EXISTS
     authors (

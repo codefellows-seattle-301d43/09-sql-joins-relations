@@ -36,29 +36,39 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = `
-  INSERT INTO articles(author, author_url)
-  VALUES ($1, $2);`;
+  let SQL = `INSERT INTO authors(author, author_url)
+  VALUES ($1, $2) ON CONFLICT DO NOTHING;`;
   let values = [
     request.body.author,
-    request.body.author_url,
+    request.body.author_url
   ];
 
-  client.query( SQL, values,
+  client.query(SQL, values,
     function(err) {
-      if (err) console.error(err);
+      if (err) {
+        console.error(err);
+        // REVIEW: Early return here prevents queryTwo from running if there's an error
+        return response.status(500).send(err);
+      }
+
       // REVIEW: This is our second query, to be executed when this first query is complete.
       queryTwo();
     }
   )
 
-  SQL = '';
-  values = [];
-
   function queryTwo() {
-    client.query( SQL, values,
+    let SQL = `
+    SELECT author_id
+    FROM authors
+    WHERE author=$1 AND author_url=$2;`;
+    // let values = [];
+    client.query(SQL, values,
       function(err, result) {
-        if (err) console.error(err);
+        if (err) {
+          console.error(err);
+          // REVIEW: Early return here prevents queryThree from running if there's an error
+          return response.status(500).send(err);
+        }
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
         queryThree(result.rows[0].author_id);
@@ -66,13 +76,25 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
-
   function queryThree(author_id) {
-    client.query( SQL, values,
+    let SQL = `
+    INSERT INTO articles(title, author_id, category, published_on, body)
+    VALUES ($1, $2, $3, $4, $5);`;
+    let values = [
+      request.body.title,
+      author_id,
+      request.body.category,
+      request.body.published_on,
+      request.body.body
+    ];
+    client.query(SQL, values,
       function(err) {
-        if (err) console.error(err);
+        if (err) {
+          console.error(err);
+          // REVIEW: Early return here prevents sending again if there's an error
+          return response.status(500).send(err);
+        }
+
         response.send('insert complete');
       }
     );

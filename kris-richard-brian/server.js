@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = 'postgress://riedmank:12345@localhost:5432/kilovolt';
+const conString = 'postgress://rich:6641@localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -35,8 +35,12 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = ``;
-  let values = [];
+  let SQL = `INSERT INTO authors (author, author_url)
+  VALUES ($1, $2)`;
+  let values = [
+    request.body.author,
+    request.body.author_url
+  ];
 
   client.query(SQL, values,
     function(err) {
@@ -52,11 +56,9 @@ app.post('/articles', (request, response) => {
   )
 
   function queryTwo() {
-    let SQL = `INSERT INTO authors (author, author_url)
-    VALUES ($1, $2)`
+    let SQL = `SELECT * from authors WHERE author = $1`
     let values = [
       request.body.author,
-      request.body.author_url
     ];
     client.query(SQL, values,
       function(err, result) {
@@ -73,8 +75,15 @@ app.post('/articles', (request, response) => {
   }
 
   function queryThree(author_id) {
-    let SQL = '';
-    let values = [];
+    let SQL = `INSERT INTO articles (author_id, title, category, published_on, body)
+    VALUES ($1, $2, $3, $4, $5)`;
+    let values = [
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body
+    ];
     client.query(SQL, values,
       function(err) {
         if (err) {

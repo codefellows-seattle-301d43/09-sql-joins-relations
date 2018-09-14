@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = '';
+const conString = 'postgres://localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -24,7 +24,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(``)
+  client.query(`SELECT article_id, authors.author_id, author, author_url, title, category, published_on, body FROM authors, articles WHERE articles.author_id = authors.author_id;`)
     .then(result => {
       response.send(result.rows);
     })
@@ -36,7 +36,7 @@ app.get('/articles', (request, response) => {
 app.post('/articles', (request, response) => {
   let SQL = '';
   let values = [];
-
+  // Insert an author and pass the author and author_url as data for the query. On conflict, do nothing.
   client.query( SQL, values,
     function(err) {
       if (err) console.error(err);
@@ -47,7 +47,7 @@ app.post('/articles', (request, response) => {
 
   SQL = '';
   values = [];
-
+  //In the second query, add the SQL commands to retrieve a single author from the authors table. Add the author name as data for the query.
   function queryTwo() {
     client.query( SQL, values,
       function(err, result) {
@@ -61,7 +61,7 @@ app.post('/articles', (request, response) => {
 
   SQL = '';
   values = [];
-
+  //In the third query, add the SQL commands to insert the new article using the author_id from the second query. Add the data from the new article, including the author_id, as data for the SQL query.
   function queryThree(author_id) {
     client.query( SQL, values,
       function(err) {

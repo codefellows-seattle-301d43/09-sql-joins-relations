@@ -24,8 +24,9 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(``)
+  client.query(`SELECT * FROM articles INNER JOIN authors on articles.author_id=authors.author_id`)
     .then(result => {
+      console.log(result.rows);
       response.send(result.rows);
     })
     .catch(err => {
@@ -34,8 +35,11 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
-  let values = [];
+  let SQL = 'INSERT INTO authors (author, author_url) VALUES($1, $2) ON CONFLICT DO NOTHING';
+  let values = [
+    request.body.author,
+    request.body.author_url
+  ];
 
   client.query( SQL, values,
     function(err) {
@@ -45,8 +49,10 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
+  SQL = 'SELECT * FROM authors WHERE authors.author=$1';
+  values = [
+    request.body.author
+  ];
 
   function queryTwo() {
     client.query( SQL, values,
@@ -54,18 +60,27 @@ app.post('/articles', (request, response) => {
         if (err) console.error(err);
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
+        console.log(result.rows[0]);
         queryThree(result.rows[0].author_id);
       }
     )
   }
 
-  SQL = '';
-  values = [];
-
+  
   function queryThree(author_id) {
+    SQL = 'INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1, $2, $3, $4, $5)';
+    values = [
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body,
+    ];
+    console.log
     client.query( SQL, values,
-      function(err) {
+      function(err, result) {
         if (err) console.error(err);
+        console.log(result.rows[0]);
         response.send('insert complete');
       }
     );
@@ -73,12 +88,22 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = '';
-  let values = [];
+  let SQL = 'UPDATE authors SET author=$1, author_url=$2 WHERE author_id=$3';
+  let values = [
+    request.body.author,
+    request.body.authorUrl,
+    request.body.author_id
+  ];
   client.query( SQL, values )
     .then(() => {
-      let SQL = '';
-      let values = [];
+      let SQL = 'UPDATE articles SET title=$1, category=$2, "published_on"=$3, body=$4 WHERE author_id=$5';
+      let values = [
+        request.body.title,
+        request.body.category,
+        request.body.published_on,
+        request.body.body,
+        request.body.author_id
+      ];
       client.query( SQL, values )
     })
     .then(() => {
@@ -143,10 +168,7 @@ function loadArticles() {
         fs.readFile('./public/data/hackerIpsum.json', 'utf8', (err, fd) => {
           JSON.parse(fd).forEach(ele => {
             let SQL = `
-              INSERT INTO articles(author_id, title, category, published_on, body)
-              SELECT author_id, $1, $2, $3, $4
-              FROM authors
-              WHERE author=$5;
+         
             `;
             let values = [ele.title, ele.category, ele.published_on, ele.body, ele.author];
             client.query( SQL, values )

@@ -24,7 +24,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(`SELECT * FROM articles JOIN authors ON articles.author_id = authors.author_id`)
+  client.query(`SELECT * FROM articles JOIN authors ON articles.author_id = authors.author_id;`)
     .then(result => {
       response.send(result.rows);
     })
@@ -34,8 +34,8 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
-  let values = [];
+  let SQL = `INSERT INTO authors(author, author_url) VALUES ($1, $2);`;
+  let values = [request.body.author, request.body.author_url];
 
   client.query( SQL, values,
     function(err) {
@@ -44,25 +44,22 @@ app.post('/articles', (request, response) => {
       queryTwo();
     }
   )
-
-  SQL = '';
-  values = [];
-
+  
   function queryTwo() {
+    SQL = `SELECT * FROM authors WHERE author=$1 AND author_url=$2;`;
+    // values = [request.body.author, request.body.author_url];
     client.query( SQL, values,
       function(err, result) {
         if (err) console.error(err);
-
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
         queryThree(result.rows[0].author_id);
       }
     )
   }
-
-  SQL = '';
-  values = [];
-
+  
   function queryThree(author_id) {
+    SQL = `INSERT INTO articles (title, author_id, category, published_on, body) VALUES ($1, $2, $3, $4, $5)`;
+    values = [request.body.title, author_id, request.body.category, request.body.published_on, request.body.body];
     client.query( SQL, values,
       function(err) {
         if (err) console.error(err);

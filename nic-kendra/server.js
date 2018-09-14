@@ -77,11 +77,11 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = `UPDATE authors (author, author_url) VALUES ($1, $2);`;
+  let SQL = `UPDATE authors (author, author_url) VALUES ($1, $2) WHERE authors.author_id = ${request.body.author_id};`;
   let values = [request.body.author, request.body.author_url];
   client.query( SQL, values )
     .then(() => {
-      let SQL = 'UPDATE articles (title, category, published_on, body) VALUES ($1, $2, $3, $4);';
+      let SQL = `UPDATE articles (title, category, published_on, body) VALUES ($1, $2, $3, $4) WHERE articles.article_id = ${request.params.id};`;
       let values = [request.body.title, request.body.category, request.body.published_on, request.body.body];
       client.query( SQL, values )
     })

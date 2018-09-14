@@ -15,7 +15,8 @@
 ## Change Log
 <!-- Use this are to document the iterative changes made to your application as each feature is successfully implemented. Use time stamps. Here's an examples:-->
 
-14 Sept 1003 - Write a SQL query to join all data from articles and authors tables on the author_id value of each when the articles are retrieved.
+14 Sept 10:03 - Write a SQL query to join all data from articles and authors tables on the author_id value of each when the articles are retrieved.
+14 Sept 10:55 - Write a SQL query to join insert new articles into seperate tables and incorporating the one-to-many relatonship.
 
 ## Credits and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->

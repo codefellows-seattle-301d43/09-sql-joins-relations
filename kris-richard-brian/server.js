@@ -38,21 +38,29 @@ app.post('/articles', (request, response) => {
   let SQL = '';
   let values = [];
 
-  client.query( SQL, values,
+  client.query(SQL, values,
     function(err) {
-      if (err) console.error(err);
+      if (err) {
+        console.error(err);
+        // REVIEW: Early return here prevents queryTwo from running if there's an error
+        return response.status(500).send(err);
+      }
+
       // REVIEW: This is our second query, to be executed when this first query is complete.
       queryTwo();
     }
   )
 
-  SQL = '';
-  values = [];
-
   function queryTwo() {
-    client.query( SQL, values,
+    let SQL = '';
+    let values = [];
+    client.query(SQL, values,
       function(err, result) {
-        if (err) console.error(err);
+        if (err) {
+          console.error(err);
+          // REVIEW: Early return here prevents queryThree from running if there's an error
+          return response.status(500).send(err);
+        }
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
         queryThree(result.rows[0].author_id);
@@ -60,13 +68,17 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
-
   function queryThree(author_id) {
-    client.query( SQL, values,
+    let SQL = '';
+    let values = [];
+    client.query(SQL, values,
       function(err) {
-        if (err) console.error(err);
+        if (err) {
+          console.error(err);
+          // REVIEW: Early return here prevents sending again if there's an error
+          return response.status(500).send(err);
+        }
+
         response.send('insert complete');
       }
     );
